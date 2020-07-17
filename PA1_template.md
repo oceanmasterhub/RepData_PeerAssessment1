@@ -8,12 +8,7 @@ output:
     df_print: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, comment = "")
-Sys.setlocale(category = "LC_ALL", locale = "English_United Kingdom.1252")
-options(scipen = 999)
-rm(list=ls())
-```
+
 
 
 
@@ -26,7 +21,8 @@ rm(list=ls())
 
 The data is downloaded from the forked repository and can be unzipped and loaded into *R* directly:
 
-```{r}
+
+```r
 # Unzip and load file
 unzip("./activity.zip")
 data <- read.csv("./activity.csv", stringsAsFactors = FALSE)
@@ -42,11 +38,20 @@ data$timelab <- factor(data$timelab, levels = unique(data$timelab))
 str(data)
 ```
 
+```
+'data.frame':	17568 obs. of  4 variables:
+ $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+ $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+ $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+ $ timelab : Factor w/ 288 levels "0:00","0:05",..: 1 2 3 4 5 6 7 8 9 10 ...
+```
+
 **OVERVIEW**
 
 The following plot shows the distribution of the daily steps through time. Step counts are recorded in 5-minute intervals in the dataset. There are 8 days with no recorded steps and encoded with *NA* values. These days are highlighted in light green color in the following plot:
 
-```{r}
+
+```r
 library(ggplot2)
 ggplot(data = data, aes(x = date, y = timelab)) +
   geom_tile(aes(fill=steps)) +
@@ -58,6 +63,8 @@ ggplot(data = data, aes(x = date, y = timelab)) +
   coord_fixed(ratio = 0.15, expand = FALSE) +
   theme_bw() + theme(panel.grid = element_blank())
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
 
 
@@ -71,14 +78,26 @@ ggplot(data = data, aes(x = date, y = timelab)) +
 
 The total number of steps by day is computed and stored in the "`mtns`" object:
 
-```{r}
+
+```r
 mtns <- aggregate(steps ~ date, data, sum) # NA ignored by default
 head(mtns)
 ```
 
+```
+        date steps
+1 2012-10-02   126
+2 2012-10-03 11352
+3 2012-10-04 12116
+4 2012-10-05 13294
+5 2012-10-06 15420
+6 2012-10-07 11015
+```
+
 A histogram is plotted to represent the frequency of the total numbers of steps for each day:
 
-```{r}
+
+```r
 ggplot(data = mtns, aes(x=steps)) +
   geom_histogram(fill = alpha("steelblue2", 0.5), color = "steelblue2", binwidth = 5000) +
   geom_vline(xintercept = mean  (mtns$steps), color = "black", lty = 1, lwd = 1) +
@@ -91,11 +110,19 @@ ggplot(data = mtns, aes(x=steps)) +
   theme_bw() + theme(panel.grid = element_blank())
 ```
 
-The median total number of steps is `r round(median(mtns$steps), 0)` whereas the mean is `r round(mean(mtns$steps), 0)`.  
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+The median total number of steps is 10765 whereas the mean is 10766.  
 Mean (in black) and median (in red) values are shown as vertical lines in the histogram above:
 
-```{r}
+
+```r
 summary(mtns$steps)
+```
+
+```
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+     41    8841   10765   10766   13294   21194 
 ```
 
 
@@ -107,14 +134,26 @@ summary(mtns$steps)
 
 A new dataframe "`adap`"is computed as the number of steps averaged by 5-minute intervals
 
-```{r}
+
+```r
 adap <- aggregate(steps ~ interval+timelab, data, mean) # NA ignored by default
 head(adap)
 ```
 
-The time serie is plotted below and includes a vertical line, in red, highlighting the maximum number of steps (`r round(max(adap$steps), 0)`) located in the 5-minute interval between `r adap$timelab[which.max(adap$steps)]` and `r adap$timelab[which.max(adap$steps)+1]`
+```
+  interval timelab     steps
+1        0    0:00 1.7169811
+2        5    0:05 0.3396226
+3       10    0:10 0.1320755
+4       15    0:15 0.1509434
+5       20    0:20 0.0754717
+6       25    0:25 2.0943396
+```
 
-```{r}
+The time serie is plotted below and includes a vertical line, in red, highlighting the maximum number of steps (206) located in the 5-minute interval between 8:35 and 8:40
+
+
+```r
 ggplot(data = adap, aes(x=interval, y=steps)) +
   geom_line(color = "black") +
   geom_vline(xintercept = adap[which.max(adap$steps), "interval"], color = "red") +
@@ -124,6 +163,8 @@ ggplot(data = adap, aes(x=interval, y=steps)) +
   theme_bw() + theme(panel.grid = element_blank())
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
 
 
 ## <span style="color:orange"> Imputing missing values </span>
@@ -132,49 +173,90 @@ ggplot(data = adap, aes(x=interval, y=steps)) +
 
   - **Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)**
 
-The total number of missing values in the dataset can be reported with `summary()` and this yields **`r summary(is.na(data$steps))["TRUE"]`**
+The total number of missing values in the dataset can be reported with `summary()` and this yields **2304**
 
-```{r}
+
+```r
 summary(is.na(data$steps))
+```
+
+```
+   Mode   FALSE    TRUE 
+logical   15264    2304 
 ```
 
 The eight days without steps recorded are the following:
 
-```{r}
+
+```r
 unique(data[which(is.na(data$steps)), "date"])
+```
+
+```
+[1] "2012-10-01" "2012-10-08" "2012-11-01" "2012-11-04" "2012-11-09"
+[6] "2012-11-10" "2012-11-14" "2012-11-30"
 ```
 
   - **Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.**
 
 Since there are eight days entirely with NA values, they will be replaced with the averaged number of steps for each 5-minute interval calculated for the whole available time serie, which is the "`adap`" dataframe calculated in a previous question:
 
-```{r}
+
+```r
 adap <- aggregate(steps ~ interval+timelab, data, mean) # NA ignored by default
 head(adap)
+```
+
+```
+  interval timelab     steps
+1        0    0:00 1.7169811
+2        5    0:05 0.3396226
+3       10    0:10 0.1320755
+4       15    0:15 0.1509434
+5       20    0:20 0.0754717
+6       25    0:25 2.0943396
 ```
 
   - **Create a new dataset that is equal to the original dataset but with the missing data filled in.**
 
 A new object "`new_data`" is created after replacing the NA values with the average number of steps for every time interval. A new call to `summary()` confirms there is no more NA values in the variable `steps`:
 
-```{r}
+
+```r
 new_data <- data
 new_data[which(is.na(new_data$steps)), "steps"] <- adap$steps
 summary(new_data$steps)
+```
+
+```
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   0.00    0.00    0.00   37.38   27.00  806.00 
 ```
 
   - **Make a histogram of the total number of steps taken each day**
 
 Firstly, the total number of steps by day is computed and stored in the "`new_mtns`" object:
 
-```{r}
+
+```r
 new_mtns <- aggregate(steps ~ date, new_data, sum) # NA ignored by default
 head(new_mtns)
 ```
 
+```
+        date    steps
+1 2012-10-01 10766.19
+2 2012-10-02   126.00
+3 2012-10-03 11352.00
+4 2012-10-04 12116.00
+5 2012-10-05 13294.00
+6 2012-10-06 15420.00
+```
+
 A histogram is plotted to represent the frequency of the total numbers of steps for each day:
 
-```{r}
+
+```r
 ggplot(data = new_mtns, aes(x=steps)) +
   geom_histogram(fill = alpha("steelblue2", 0.5), color = "steelblue2", binwidth = 5000) +
   geom_vline(xintercept = mean  (new_mtns$steps), color = "black", lty = 1, lwd = 1) +
@@ -187,26 +269,53 @@ ggplot(data = new_mtns, aes(x=steps)) +
   theme_bw() + theme(panel.grid = element_blank())
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+
   - **Calculate and report the mean and median total number of steps taken per day**
 
-The median total number of steps is now `r round(median(new_mtns$steps), 0)` and equals the mean of `r round(mean(new_mtns$steps), 0)`.  
+The median total number of steps is now 10766 and equals the mean of 10766.  
 Mean (in black) and median (in red) values are shown as vertical lines in the histogram above
 
-```{r}
+
+```r
 round(median(new_mtns$steps), 0) # Median
+```
+
+```
+[1] 10766
+```
+
+```r
 round(mean  (new_mtns$steps), 0) # Mean
+```
+
+```
+[1] 10766
 ```
 
   - **Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?**
 
 These values are in practice the same mean and median values of the original dataset with NA values. In detail, the strategy consisting of NA replacements with average values for each time interval moves the median towards the mean.
 
-```{r}
+
+```r
 # Total number of steps by day (NA omitted)
 summary(mtns$steps)
+```
 
+```
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+     41    8841   10765   10766   13294   21194 
+```
+
+```r
 # Total number of steps by day (NA replaced)
 summary(new_mtns$steps)
+```
+
+```
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+     41    9819   10766   10766   12811   21194 
 ```
 
 
@@ -219,7 +328,8 @@ summary(new_mtns$steps)
 
 Using the `new_data` object, weekdays and weekends will be identified as factors:
 
-```{r}
+
+```r
 # Create variable weekday as factor
 new_data$weekday <- weekdays(as.Date(new_data$date))
 new_data$weekday <- factor(new_data$weekday, levels = unique(new_data$weekday))
@@ -236,9 +346,20 @@ new_data$weekpart <- factor(new_data$weekpart)
 str(new_data)
 ```
 
+```
+'data.frame':	17568 obs. of  6 variables:
+ $ steps   : num  1.717 0.3396 0.1321 0.1509 0.0755 ...
+ $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+ $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+ $ timelab : Factor w/ 288 levels "0:00","0:05",..: 1 2 3 4 5 6 7 8 9 10 ...
+ $ weekday : Factor w/ 7 levels "Monday","Tuesday",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ weekpart: Factor w/ 2 levels "Weekday","Weekend": 1 1 1 1 1 1 1 1 1 1 ...
+```
+
   - **Make a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data**
 
-```{r}
+
+```r
 # Number of steps averaged across weekdays and weekends
 avg_week <- aggregate(steps ~ interval + timelab + weekpart, new_data, mean)
 
@@ -253,6 +374,8 @@ ggplot(data = avg_week, aes(x = interval, y = steps)) +
   theme_bw() +
   theme(strip.background = element_rect(fill = alpha("steelblue2", 0.3)))
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
 
 A careful inspection of the figure shows that more steps are taken during the week in the mornings with a maximum between 8:00 and 9:00, while steps are more uniformly distributed during the weekends with no remarkable activity peak. In terms of steps taken, activity seems to be more continuous on Saturdays and Sundays.
 
