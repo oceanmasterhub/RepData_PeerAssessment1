@@ -5,7 +5,6 @@ author:   "https://github.com/oceanmasterhub/RepData_PeerAssessment1"
 output:
   html_document:
     keep_md: true
-    df_print: default
 ---
 
 
@@ -46,17 +45,17 @@ str(data)
  $ timelab : Factor w/ 288 levels "0:00","0:05",..: 1 2 3 4 5 6 7 8 9 10 ...
 ```
 
-**OVERVIEW**
+**PREVIEW**
 
-The following plot shows the distribution of the daily steps through time. Step counts are recorded in 5-minute intervals in the dataset. There are 8 days with no recorded steps and encoded with *NA* values. These days are highlighted in light green color in the following plot:
+In order to **visualize the raw data prior to the analysis**, the following **extra preliminary plot** shows the distribution of the daily steps through time. Step counts are recorded in 5-minute intervals in the dataset. We can easily see there are 8 full days with no recorded steps, encoded with *NA* values and plotted in green below:
 
 
 ```r
 library(ggplot2)
 ggplot(data = data, aes(x = date, y = timelab)) +
   geom_tile(aes(fill=steps)) +
-  labs(x = "", y = "Time\n", title = "Daily steps", fill = "Steps",
-       subtitle = "Number of steps taken by day and 5-minute time interval (raw data)") +
+  labs(x = "", y = "Time\n", title = "Raw data distribution", fill = "Steps",
+       subtitle = "A preview of the raw number of steps taken by day and 5-minute time interval") +
   scale_x_date(date_labels = "%d-%b", date_breaks = "1 week") +
   scale_y_discrete(breaks = c("0:05","4:00","8:00","12:00","16:00","20:00","23:55")) +
   scale_fill_gradient(low = "white", high = "steelblue4", na.value = alpha("green",0.3)) +
@@ -66,6 +65,8 @@ ggplot(data = data, aes(x = date, y = timelab)) +
 
 ![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
+
+*<span style="color:red"> NOTE: This figure above has been intentionally extra-added to better show the distribution of the raw data before continuing with the required data analysis. The remaining tasks and figures of the Reproducible Research course project are presented hereafter </span>*
 
 
 ## <span style="color:orange"> What is mean total number of steps taken per day? </span>
@@ -106,7 +107,7 @@ ggplot(data = mtns, aes(x=steps)) +
   labs(x = "Number of steps per day",
        y = "Number of days\n",
        title = "Histogram of total number of steps taken each day",
-       subtitle = "Using the dataset with Na values omitted") +
+       subtitle = "Using the dataset with NA values omitted") +
   theme_bw() + theme(panel.grid = element_blank())
 ```
 
